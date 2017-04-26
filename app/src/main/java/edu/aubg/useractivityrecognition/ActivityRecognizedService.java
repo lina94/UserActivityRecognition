@@ -44,7 +44,7 @@ public class ActivityRecognizedService extends IntentService {
     private void handleDetectedActivities(List<DetectedActivity> probableActivities) {
         for (DetectedActivity activity : probableActivities) {
             Log.d("Got activity:", "" + activity.getType() + " with confidence: " + activity.getConfidence());
-            if (relevantActivity(activity) && activity.getConfidence() > 75) {
+            if (relevantActivity(activity) && activity.getConfidence() > 66) {
                 if (currentActivityType == null || activity.getType() != currentActivityType) {
                     currentActivityType = activity.getType();
                     saveActivity(activity);
@@ -74,8 +74,7 @@ public class ActivityRecognizedService extends IntentService {
 
         if (c.moveToFirst()) {
             return c.getInt(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE);
-        }
-        else return -1;
+        } else return -1;
     }
 
 
@@ -83,9 +82,7 @@ public class ActivityRecognizedService extends IntentService {
         switch (activity.getType()) {
             case DetectedActivity.IN_VEHICLE:
                 return true;
-            case DetectedActivity.ON_BICYCLE:
-                return true;
-            case DetectedActivity.ON_FOOT:
+            case DetectedActivity.WALKING:
                 return true;
             case DetectedActivity.RUNNING:
                 return true;

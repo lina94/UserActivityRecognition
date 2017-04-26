@@ -11,6 +11,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -25,6 +27,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private static final int ACTIVITY_LOADER = 100;
     private GoogleApiClient mApiClient;
+
+    private ImageView actionImage;
+    private TextView actionDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +46,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         mApiClient.connect();
 
+        actionImage = (ImageView) findViewById(R.id.actionImage);
+        actionDescription = (TextView) findViewById(R.id.actionDescription);
+
+
+        int lastActivityType = getLastActivityType();
+        setImageAndDescription(lastActivityType);
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Intent intent = new Intent(this, ActivityRecognizedService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, 1000, pendingIntent);
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, 3000, pendingIntent);
 
         Log.d("Connected:", "yes");
 
@@ -62,6 +73,43 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    private void setImageAndDescription(int activityType) {
+        switch (activityType) {
+            case DetectedActivity.IN_VEHICLE:
+                actionImage.setImageResource(R.drawable.vehicle);
+                actionDescription.setText("In a vehicle");
+                break;
+            case DetectedActivity.WALKING:
+                actionImage.setImageResource(R.drawable.walking);
+                actionDescription.setText("Walking");
+                break;
+            case DetectedActivity.RUNNING:
+                actionImage.setImageResource(R.drawable.running);
+                actionDescription.setText("Running");
+                break;
+            case DetectedActivity.STILL:
+                actionImage.setImageResource(R.drawable.still);
+                actionDescription.setText("Standing still");
+                break;
+        }
+    }
+
+    private int getLastActivityType() {
+        Uri mUri = ActivityContract.ActivityEntry.CONTENT_URI_FIRST_TWO;
+
+        Cursor c = getContentResolver().query(
+                mUri,
+                ActivityContract.ActivityEntry.ACTIVITY_COLUMNS,
+                null,
+                null,
+                ActivityContract.ActivityEntry.COLUMN_ACTIVITY_DATE + " DESC"
+        );
+
+        if (c.moveToFirst()) {
+            return c.getInt(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE);
+        } else return -1;
     }
 
     @Override
@@ -84,9 +132,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
-        if(data.getCount() > 1){
+        if (data.getCount() > 1) {
             data.moveToPosition(0);
             long currentActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
+            int currentActivityType = data.getInt(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE);
+            setImageAndDescription(currentActivityType);
 
             data.moveToPosition(1);
             long lastActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
@@ -99,14 +149,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             String activityMessage = "You ";
 
-            switch (lastActivityType){
+            switch (lastActivityType) {
                 case DetectedActivity.IN_VEHICLE:
                     activityMessage += "were in a vehicle for ";
                     break;
-                case DetectedActivity.ON_BICYCLE:
-                    activityMessage += "were biking for ";
-                    break;
-                case DetectedActivity.ON_FOOT:
+                case DetectedActivity.WALKING:
                     activityMessage += "were walking for ";
                     break;
                 case DetectedActivity.RUNNING:
