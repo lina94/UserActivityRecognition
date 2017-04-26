@@ -15,6 +15,9 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.DetectedActivity;
+
+import java.util.concurrent.TimeUnit;
 
 import edu.aubg.useractivityrecognition.data.ActivityContract;
 
@@ -44,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(@Nullable Bundle bundle) {
         Intent intent = new Intent(this, ActivityRecognizedService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, 3000, pendingIntent);
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, 1000, pendingIntent);
 
         Log.d("Connected:", "yes");
 
@@ -63,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Uri mUri = ActivityContract.ActivityEntry.CONTENT_URI;
+        Uri mUri = ActivityContract.ActivityEntry.CONTENT_URI_FIRST_TWO;
         if (null != mUri) {
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
@@ -73,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     ActivityContract.ActivityEntry.ACTIVITY_COLUMNS,
                     null,
                     null,
-                    null
+                    ActivityContract.ActivityEntry.COLUMN_ACTIVITY_DATE + " DESC"
             );
         }
         return null;
@@ -81,26 +84,50 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
-//        if(data.getCount() > 1){
-//            data.moveToPosition(0);
-//            long currentActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
-//            data.moveToPosition(1);
-//            long lastActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
-//
-//            long deltaTime = currentActivityStartTime - lastActivityStartTime;
-//
-//            long minutes = TimeUnit.MILLISECONDS.toMinutes(deltaTime);
-//            long seconds = TimeUnit.MILLISECONDS.toSeconds(deltaTime) - TimeUnit.MINUTES.toSeconds(minutes);
-//
-//            Snackbar.make(findViewById(R.id.root_coordinatorlayout),
-//                    String.format("You have ran for %d minutes and %d seconds", minutes, seconds), 5);
-//        }
-        Log.d("Loader finished:", "yes");
+        if(data.getCount() > 1){
+            data.moveToPosition(0);
+            long currentActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
 
-        if (null != data && data.moveToNext()) {
+            data.moveToPosition(1);
+            long lastActivityStartTime = data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_DATE);
+            int lastActivityType = data.getInt(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE);
+
+            long deltaTime = currentActivityStartTime - lastActivityStartTime;
+
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(deltaTime);
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(deltaTime) - TimeUnit.MINUTES.toSeconds(minutes);
+
+            String activityMessage = "You ";
+
+            switch (lastActivityType){
+                case DetectedActivity.IN_VEHICLE:
+                    activityMessage += "were in a vehicle for ";
+                    break;
+                case DetectedActivity.ON_BICYCLE:
+                    activityMessage += "were biking for ";
+                    break;
+                case DetectedActivity.ON_FOOT:
+                    activityMessage += "were walking for ";
+                    break;
+                case DetectedActivity.RUNNING:
+                    activityMessage += "were running for ";
+                    break;
+                case DetectedActivity.STILL:
+                    activityMessage += "were standing still for ";
+                    break;
+            }
+
             Snackbar.make(findViewById(R.id.root_coordinatorlayout),
-                    String.format("Added" + data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE)), 5);
+                    String.format(activityMessage + "%d minutes and %d seconds", minutes, seconds), Snackbar.LENGTH_LONG).show();
+
+//            data.close();
         }
+//        Log.d("Loader finished:", "yes");
+//
+//        if (null != data && data.moveToNext()) {
+//            Snackbar.make(findViewById(R.id.root_coordinatorlayout),
+//                    String.format("Added" + data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE)), 5).show();
+//        }
     }
 
     @Override

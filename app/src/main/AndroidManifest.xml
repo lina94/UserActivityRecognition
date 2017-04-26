@@ -18,14 +18,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".data.ActivityProvider"
+            android:authorities="edu.aubg.useractivityrecognition.activityprovider"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service android:name=".ActivityRecognizedService" />
     </application>
-
-    <provider
-        android:name=".data.ActivityProvider"
-        android:authorities="edu.aubg.useractivityrecognition.activityprovider"
-        android:enabled="true"
-        android:exported="false" />
-
-    <service android:name=".ActivityRecognizedService" />
-
 </manifest>

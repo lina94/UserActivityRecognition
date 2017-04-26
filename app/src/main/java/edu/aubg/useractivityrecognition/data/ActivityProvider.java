@@ -63,7 +63,7 @@ public class ActivityProvider extends ContentProvider {
                         null,
                         null,
                         sortOrder,
-                        "2"
+                        null
                 );
                 break;
             }
