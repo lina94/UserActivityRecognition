@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.aubg.useractivityrecognition">
-    
+
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/icon"
@@ -19,6 +19,12 @@
             </intent-filter>
         </activity>
     </application>
+
+    <provider
+        android:name=".data.ActivityProvider"
+        android:authorities="edu.aubg.useractivityrecognition.activityprovider"
+        android:enabled="true"
+        android:exported="false" />
 
     <service android:name=".ActivityRecognizedService" />
 
