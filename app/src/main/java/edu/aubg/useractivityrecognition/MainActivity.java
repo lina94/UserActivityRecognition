@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         actionImage = (ImageView) findViewById(R.id.actionImage);
         actionDescription = (TextView) findViewById(R.id.actionDescription);
 
-
         int lastActivityType = getLastActivityType();
         setImageAndDescription(lastActivityType);
     }
@@ -61,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mApiClient, 3000, pendingIntent);
 
         Log.d("Connected:", "yes");
+
+        Intent intentDb = new Intent(this, DbTestActivity.class);
+        startActivity(intentDb);
 
         getLoaderManager().initLoader(ACTIVITY_LOADER, null, this);
     }

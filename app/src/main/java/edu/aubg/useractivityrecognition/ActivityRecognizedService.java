@@ -45,12 +45,22 @@ public class ActivityRecognizedService extends IntentService {
         for (DetectedActivity activity : probableActivities) {
             Log.d("Got activity:", "" + activity.getType() + " with confidence: " + activity.getConfidence());
             if (relevantActivity(activity) && activity.getConfidence() > 66) {
+                saveTestActivity(activity);
                 if (currentActivityType == null || activity.getType() != currentActivityType) {
                     currentActivityType = activity.getType();
                     saveActivity(activity);
                 }
             }
         }
+    }
+
+    private void saveTestActivity(DetectedActivity activity) {
+        ContentValues cv = new ContentValues();
+        cv.put(ActivityContract.ActivityEntryTest.COLUMN_ACTIVITY_TYPE, activity.getType());
+        cv.put(ActivityContract.ActivityEntryTest.COLUMN_ACTIVITY_DATE, new Date().getTime());
+        cv.put(ActivityContract.ActivityEntryTest.COLUMN_ACTIVITY_CONFIDENCE, activity.getConfidence());
+
+        getContentResolver().insert(ActivityContract.ActivityEntryTest.CONTENT_URI, cv);
     }
 
     private void saveActivity(DetectedActivity activity) {

@@ -15,6 +15,7 @@ public class ActivityProvider extends ContentProvider {
 
     static final int ACTIVITIES = 100;
     static final int FIRST_TWO_ACTIVITIES = 101;
+    static final int TEST_ACTIVITIES = 102;
 
 
     static UriMatcher buildUriMatcher() {
@@ -24,6 +25,7 @@ public class ActivityProvider extends ContentProvider {
 
         matcher.addURI(authority, ActivityContract.PATH_ACTIVITY, ACTIVITIES);
         matcher.addURI(authority, ActivityContract.PATH_ACTIVITY + '/' + ActivityContract.PATH_FIRST_TWO, FIRST_TWO_ACTIVITIES);
+        matcher.addURI(authority, ActivityContract.PATH_ACTIVITY_TEST, TEST_ACTIVITIES);
 
         return matcher;
     }
@@ -43,6 +45,8 @@ public class ActivityProvider extends ContentProvider {
                 return ActivityContract.ActivityEntry.CONTENT_TYPE;
             case FIRST_TWO_ACTIVITIES:
                 return ActivityContract.ActivityEntry.CONTENT_TYPE;
+            case TEST_ACTIVITIES:
+                return ActivityContract.ActivityEntryTest.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -80,6 +84,18 @@ public class ActivityProvider extends ContentProvider {
                 );
                 break;
             }
+            case TEST_ACTIVITIES: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        ActivityContract.ActivityEntryTest.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -103,6 +119,14 @@ public class ActivityProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case TEST_ACTIVITIES: {
+                long _id = db.insert(ActivityContract.ActivityEntryTest.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ActivityContract.ActivityEntryTest.buildActivityUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -121,6 +145,10 @@ public class ActivityProvider extends ContentProvider {
             case ACTIVITIES:
                 rowsDeleted = db.delete(
                         ActivityContract.ActivityEntry.TABLE_NAME, selection, selectionArgs);
+                break;
+            case TEST_ACTIVITIES:
+                rowsDeleted = db.delete(
+                        ActivityContract.ActivityEntryTest.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
