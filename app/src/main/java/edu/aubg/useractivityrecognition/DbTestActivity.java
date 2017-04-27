@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -49,8 +49,17 @@ public class DbTestActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
+            mApiClient.connect();
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
+        mApiClient.disconnect();
         getContentResolver().delete(ActivityContract.ActivityEntryTest.CONTENT_URI, null, null);
     }
 

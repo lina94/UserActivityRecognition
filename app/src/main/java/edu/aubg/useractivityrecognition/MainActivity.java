@@ -54,6 +54,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mApiClient.isConnecting() && !mApiClient.isConnected()) {
+            mApiClient.connect();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mApiClient.disconnect();
+    }
+
+    @Override
     public void onConnected(@Nullable Bundle bundle) {
         Intent intent = new Intent(this, ActivityRecognizedService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -168,15 +182,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             Snackbar.make(findViewById(R.id.root_coordinatorlayout),
                     String.format(activityMessage + "%d minutes and %d seconds", minutes, seconds), Snackbar.LENGTH_LONG).show();
-
-//            data.close();
         }
-//        Log.d("Loader finished:", "yes");
-//
-//        if (null != data && data.moveToNext()) {
-//            Snackbar.make(findViewById(R.id.root_coordinatorlayout),
-//                    String.format("Added" + data.getLong(ActivityContract.ActivityEntry.INDEX_ACTIVITY_TYPE)), 5).show();
-//        }
     }
 
     @Override
