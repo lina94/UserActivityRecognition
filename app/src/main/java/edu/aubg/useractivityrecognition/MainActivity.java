@@ -75,8 +75,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         Log.d("Connected:", "yes");
 
-        Intent intentDb = new Intent(this, DbTestActivity.class);
-        startActivity(intentDb);
+//        Intent intentDb = new Intent(this, DbTestActivity.class);
+//        startActivity(intentDb);
 
         getLoaderManager().initLoader(ACTIVITY_LOADER, null, this);
     }
